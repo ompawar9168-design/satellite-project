@@ -5,21 +5,21 @@ from routes.analysis_routes import analysis_bp
 app = Flask(__name__)
 CORS(app)
 
+# Register routes
 app.register_blueprint(analysis_bp, url_prefix="/api")
 
-
-@app.route("/")
-def home():
-    return "Satellite Backend Running 🚀"
-
-
-@app.route("/api/test", methods=["GET"])
-def test_api():
+# ✅ HEALTH ROUTE (IMPORTANT)
+@app.route("/api/health", methods=["GET"])
+def health():
     return jsonify({
         "status": "success",
-        "message": "Backend Connected Successfully"
+        "message": "Backend is running"
     })
 
+# Optional test route
+@app.route("/")
+def home():
+    return "Backend Running 🚀"
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(host="0.0.0.0", port=5000)
