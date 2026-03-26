@@ -4,7 +4,7 @@ import axios from 'axios'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
-const API_BASE_URL = 'https://YOUR-BACKEND-URL.onrender.com'
+const API_BASE_URL = import.meta.env.VITE_API_URL
 
 function ProcessingPage() {
   const navigate = useNavigate()
@@ -32,9 +32,14 @@ function ProcessingPage() {
           return
         }
 
+        if (!API_BASE_URL) {
+          throw new Error('VITE_API_URL is missing')
+        }
+
         setCurrentStep(0)
 
         const health = await axios.get(`${API_BASE_URL}/api/health`)
+
         if (health.data.status !== 'success') {
           throw new Error('Backend is not healthy')
         }
@@ -45,6 +50,10 @@ function ProcessingPage() {
         }
 
         const res = await axios.post(`${API_BASE_URL}/api/run-analysis`, data)
+
+        if (!res.data || res.data.status !== 'success') {
+          throw new Error(res.data?.message || 'Analysis API failed')
+        }
 
         setCurrentStep(steps.length - 1)
         await new Promise((res) => setTimeout(res, 800))
@@ -57,7 +66,11 @@ function ProcessingPage() {
         })
       } catch (err) {
         console.error('Run analysis error:', err)
-        setError('Failed to run analysis. Please check backend deployment, API URL, and environment variables.')
+        setError(
+          err?.response?.data?.message ||
+            err?.message ||
+            'Failed to run analysis. Please check backend deployment, API URL, and environment variables.'
+        )
       }
     }
 
@@ -106,6 +119,7 @@ function ProcessingPage() {
           <div className="card" style={{ maxWidth: '700px', marginTop: '20px' }}>
             <h3>Analysis Error</h3>
             <p>{error}</p>
+
             <button className="primary-btn" onClick={() => navigate('/year-selection')}>
               Restart Analysis
             </button>
