@@ -4,6 +4,8 @@ import axios from 'axios'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 
+const API_BASE_URL = 'https://YOUR-BACKEND-URL.onrender.com'
+
 function ProcessingPage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -14,11 +16,11 @@ function ProcessingPage() {
 
   const steps = [
     '📡 Checking backend health...',
-    '🛰️ Fetching real Sentinel imagery...',
+    '🛰️ Fetching real satellite imagery...',
     '🧠 Running land classification...',
     '🔍 Detecting land-use changes...',
     '📊 Generating stats, graphs, and insights...',
-    '🔮 Predicting 2028 trends...',
+    '🔮 Predicting future trends...',
     '✅ Finalizing dashboard...',
   ]
 
@@ -31,18 +33,18 @@ function ProcessingPage() {
         }
 
         setCurrentStep(0)
-        const health = await axios.get('http://127.0.0.1:5000/api/health')
 
+        const health = await axios.get(`${API_BASE_URL}/api/health`)
         if (health.data.status !== 'success') {
           throw new Error('Backend is not healthy')
         }
 
         for (let i = 1; i < steps.length - 1; i++) {
           setCurrentStep(i)
-          await new Promise((res) => setTimeout(res, 600))
+          await new Promise((res) => setTimeout(res, 500))
         }
 
-        const res = await axios.post('http://127.0.0.1:5000/api/run-analysis', data)
+        const res = await axios.post(`${API_BASE_URL}/api/run-analysis`, data)
 
         setCurrentStep(steps.length - 1)
         await new Promise((res) => setTimeout(res, 800))
@@ -55,7 +57,7 @@ function ProcessingPage() {
         })
       } catch (err) {
         console.error('Run analysis error:', err)
-        setError('Failed to run full analysis. Please check backend, internet, API, and Sentinel configuration.')
+        setError('Failed to run analysis. Please check backend deployment, API URL, and environment variables.')
       }
     }
 
@@ -104,7 +106,6 @@ function ProcessingPage() {
           <div className="card" style={{ maxWidth: '700px', marginTop: '20px' }}>
             <h3>Analysis Error</h3>
             <p>{error}</p>
-
             <button className="primary-btn" onClick={() => navigate('/year-selection')}>
               Restart Analysis
             </button>
